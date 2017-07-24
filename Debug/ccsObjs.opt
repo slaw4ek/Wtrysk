@@ -1,0 +1,1 @@
+"./mapy.obj" "./DSP281x_usDelay.obj" "./DSP281x_PieVect.obj" "./DSP281x_PieCtrl.obj" "./DSP281x_GlobalVariableDefs.obj" "./DSP281x_Ev.obj" "./DSP281x_DefaultIsr.obj" "./DSP281x_CpuTimers.obj" "./DSP281x_Adc.obj" "../2812_RAM_lnk.cmd" "../DSP281x_Headers_nonBIOS.cmd" "../rts2800_ml.lib" -l"libc.a" 
