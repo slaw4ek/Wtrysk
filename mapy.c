@@ -703,6 +703,7 @@ void Vsredni(void){
 					licznik_v=0;
 					bufor_v=0;
 				}
+				bufor_v=0;
 
 	//MAF_sredni=Napiecie_adcB0_MAF;
 }

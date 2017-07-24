@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccsv5/tools/compiler/c2000_6.2.0
+CG_TOOL_ROOT := C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0
 
 ORDERED_OBJS += \
 $(GEN_CMDS__FLAG) \
@@ -119,19 +119,19 @@ endif
 # Add inputs and outputs from these tool invocations to the build variables 
 
 # All Target
-all: EFI.out
+all: Wtrysk.out
 
 # Tool invocations
-EFI.out: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
+Wtrysk.out: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: C2000 Linker'
-	"C:/ti/ccsv5/tools/compiler/c2000_6.2.0/bin/cl2000" -v28 -ml -mt -g --diag_warning=225 --display_error_number --diag_wrap=off -z -m"EFI.map" --stack_size=0x400 --warn_sections -i"C:/ti/ccsv5/tools/compiler/c2000_6.2.0/lib" -i"C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include" --reread_libs --display_error_number --diag_wrap=off --xml_link_info="EFI_linkInfo.xml" --rom_model -o "EFI.out" $(ORDERED_OBJS)
+	"C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/bin/cl2000" -v28 -ml -mt -g --diag_warning=225 --display_error_number --diag_wrap=off -z -m"Wtrysk.map" --stack_size=0x400 --warn_sections -i"C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/lib" -i"C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include" --reread_libs --display_error_number --diag_wrap=off --xml_link_info="Wtrysk_linkInfo.xml" --rom_model -o "Wtrysk.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(C2000_EXECUTABLE_OUTPUTS__QUOTED) "EFI.out"
+	-$(RM) $(C2000_EXECUTABLE_OUTPUTS__QUOTED) "Wtrysk.out"
 	-$(RM) "DSP281x_Adc.pp" "DSP281x_CpuTimers.pp" "DSP281x_DefaultIsr.pp" "DSP281x_Ev.pp" "DSP281x_GlobalVariableDefs.pp" "DSP281x_PieCtrl.pp" "DSP281x_PieVect.pp" "mapy.pp" 
 	-$(RM) "DSP281x_Adc.obj" "DSP281x_CpuTimers.obj" "DSP281x_DefaultIsr.obj" "DSP281x_Ev.obj" "DSP281x_GlobalVariableDefs.obj" "DSP281x_PieCtrl.obj" "DSP281x_PieVect.obj" "DSP281x_usDelay.obj" "mapy.obj" 
 	-$(RM) "DSP281x_usDelay.pp" 
