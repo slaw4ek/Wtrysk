@@ -212,7 +212,24 @@ void main(void)
    	   	EvbRegs.T3CON.bit.TPS = 7;				// prescaler = 128
    	   	EvbRegs.T3PR = 700;					//1 ms dla ADC
 
-   	 // Poni¿ej inicjalizacja PWM1:
+
+
+
+   	    		EvbRegs.T4CON.bit.FREE = 0;				// Stop on emulation suspend
+   	    	    EvbRegs.T4CON.bit.SOFT = 0;				// Stop on emulation suspend
+   	    	    EvbRegs.T4CON.bit.TMODE = 2;			// Continuous up count mode
+   	    	    EvbRegs.T4CON.bit.TENABLE = 1;			// enable GP Timer 1
+   	    	   	EvbRegs.T4CON.bit.TCLKS10 = 0;			// internal clock
+   	    	   	EvbRegs.T4CON.bit.TCLD10 = 0;			// Compare Reload when zero
+   	    	   	EvbRegs.T4CON.bit.TECMPR = 0;			// Disable Compare operation
+
+
+
+   	    	   	EvbRegs.T4CON.bit.TPS = 7;				// prescaler = 128
+   	    	   	EvbRegs.T4PR = 65535;					//1 ms dla ADC
+
+
+   	   	// Poni¿ej inicjalizacja PWM1:
    	   			EvaRegs.ACTRA.bit.CMP1ACT=1; //forced low
    	    	    EvaRegs.ACTRA.bit.SVRDIR=0;
    	    	    EvaRegs.ACTRA.bit.D=0;
@@ -375,14 +392,18 @@ interrupt void cpu_timer0_isr(void)
     if(CpuTimer0.InterruptCount%4==1){
     	wylacz_wtryskiwacz();
     	//ustalony();
+    	V_TPS_A();
+    	V_TPS_B();
     	wylacz_wtryskiwacz();
     	Vsredni();
     }
 
     if(CpuTimer0.InterruptCount%4==2){
     	wylacz_wtryskiwacz();
-    	serwo_algorytm(Napiecie_adcB3_tW, Napiecie_adcB5_TPS_A); //algorytm serwa wykorzystuje napiêcie z ADC - temperature cieczy chlodzacej oraz polozenie przepustnicy z kanalu A
-
+    	//serwo_algorytm(Napiecie_adcB3_tW, Napiecie_adcB5_TPS_A); //algorytm serwa wykorzystuje napiêcie z ADC - temperature cieczy chlodzacej oraz polozenie przepustnicy z kanalu A
+    	serwo_ustaw(katA);
+    	dotrysk();
+    	jalowe();
     	MAFsredni();
     	wylacz_wtryskiwacz();
     }
@@ -492,12 +513,16 @@ return 0;
 }
 
 void proznia(void){
-	if((GpioDataRegs.GPADAT.bit.GPIOA10==0)||((Uint32)predkosc_ob<1400)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
+	if((GpioDataRegs.GPADAT.bit.GPIOA10==0)&&((Uint32)predkosc_ob<1400)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
 		GpioDataRegs.GPADAT.bit.GPIOA14=1;
 	}
-	if((GpioDataRegs.GPADAT.bit.GPIOA10==1)&&((Uint32)predkosc_ob>=1900)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
+
+
+
+	if((GpioDataRegs.GPADAT.bit.GPIOA10==1)&&((Uint32)predkosc_ob>=1450)||((Uint32)predkosc_ob<=650)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
 			GpioDataRegs.GPADAT.bit.GPIOA14=0;
 		}
+
 }
 void pompa_paliwa(void){
 	if(GpioDataRegs.GPADAT.bit.GPIOA13==0){
@@ -718,15 +743,17 @@ void Vsredni(void){
 }
 
 void dotrysk(void){
-if(deltaTPS_A>50||deltaTPS_B>50) deltatdotr=5;
+if((deltaTPS_A>10)||(deltaTPS_B>10)) deltatdotr=10;
+else deltatdotr=0;
 }
 
+
 void V_TPS_A(void){
-if((EvbRegs.T3PR==0)){ //licznik parzysty - podstawiamy starsz¹ wartosc rejestru
+	if((EvbRegs.T4CNT>0)&&(EvbRegs.T3CNT<1000)){ //licznik parzysty - podstawiamy starsz¹ wartosc rejestru
 				wartosc_starszaTPS_A=Napiecie_adcB5_TPS_A;
 		}
 
-if(EvbRegs.T3PR==700){ //licznik nieparzysty - podstawiamy m³odsz¹ wartosc rejestru
+	if((EvbRegs.T4CNT>64000)&&(EvbRegs.T3CNT<65535)){ //licznik nieparzysty - podstawiamy m³odsz¹ wartosc rejestru
 				wartosc_mlodszaTPS_A=Napiecie_adcB5_TPS_A;
 		}
 if(wartosc_starszaTPS_A<wartosc_mlodszaTPS_A)	{
@@ -736,24 +763,24 @@ if(wartosc_starszaTPS_A<wartosc_mlodszaTPS_A)	{
 }
 
 void V_TPS_B(void){
-if((EvbRegs.T3PR==0)){ //licznik parzysty - podstawiamy starsz¹ wartosc rejestru
+if((EvbRegs.T4CNT>0)&&(EvbRegs.T3CNT<1000)){ //licznik parzysty - podstawiamy starsz¹ wartosc rejestru
 				wartosc_starszaTPS_B=Napiecie_adcB7_TPS_B;
 		}
 
-if(EvbRegs.T3PR==700){ //licznik nieparzysty - podstawiamy m³odsz¹ wartosc rejestru
+if((EvbRegs.T4CNT>64000)&&(EvbRegs.T3CNT<65535)){ //licznik nieparzysty - podstawiamy m³odsz¹ wartosc rejestru
 				wartosc_mlodszaTPS_B=Napiecie_adcB7_TPS_B;
 		}
-if(wartosc_starszaTPS_B<wartosc_mlodszaTPS_B)	{
-		deltaTPS_B=(wartosc_mlodszaTPS_B-wartosc_starszaTPS_B);
+if((wartosc_starszaTPS_B<wartosc_mlodszaTPS_B)||(Napiecie_adcB7_TPS_B<5))	{
+		deltaTPS_B=abs((wartosc_mlodszaTPS_B-wartosc_starszaTPS_B));
 
 	}
 }
 
-void jalowe(void){
+void jalowe(void){/*
 	if(predkosc_ob<650){ //jesli predkosc obrotowa spadnie ponizej 700 wlacz przyspieszacz podscisnieniowy
 		GpioDataRegs.GPADAT.bit.GPIOA14=0;
 	}
 	if(predkosc_ob>700){ //jesli wzrosnie wylacz, podsumowuj¹c poni¿ej 700 przyspieszacz wlaczony powy¿ej 700 do 1200 wylaczony powyzej 1250 wlaczony (histereza 50 obrotow)
 		GpioDataRegs.GPADAT.bit.GPIOA14=1;
-	}
+	}*/
 }
