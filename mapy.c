@@ -91,7 +91,7 @@ void wylacz_wtryskiwacz(void);
 void MAFsredni(void);
 void Vsredni(void);
 void dotrysk(void);
-
+void jalowe(void);
 
 long int MAF_sredni=0;// wartosc usredniona maf z 10 impulsów wa³u korbowego
 
@@ -729,3 +729,11 @@ if(wartosc_rejestru_licznika_starsza<wartosc_rejestru_licznika_mlodsza)	{
 	}
 }
 */
+void jalowe(void){
+	if(predkosc_ob<650){ //jesli predkosc obrotowa spadnie ponizej 700 wlacz przyspieszacz podscisnieniowy
+		GpioDataRegs.GPADAT.bit.GPIOA14=0;
+	}
+	if(predkosc_ob>700){ //jesli wzrosnie wylacz, podsumowuj¹c poni¿ej 700 przyspieszacz wlaczony powy¿ej 700 do 1200 wylaczony powyzej 1250 wlaczony (histereza 50 obrotow)
+		GpioDataRegs.GPADAT.bit.GPIOA14=1;
+	}
+}
