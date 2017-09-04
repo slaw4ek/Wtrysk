@@ -11,6 +11,7 @@ double md[512]={-36.15,-35.60,-35.07,-34.54,-34.01,-33.49,-32.97,-32.46,-31.95,-
 }; //masowy przep³yw powietrza w zale¿noœci od wskazañ ADC przep³ywomierza (ustawiony na 9 bit);
 //double Q_wtr=671; //wydajnoœæ wtryskiwacza
 double tz=0.5; //czas zw³oki otwarcia wtryskiwacza
+double deltatdotr=0;
 //double t_wtr=0; //czas wtrysku
 //double sprawdzam,A,B,R,D,Z,G,P;
 //unsigned int przedwtrysk[255]={15808,15808,15808,15808,15808,15808,15808,13807,12172,11478,10859,10308,9820,9389,9009,8675,8381,8229,8086,7953,7828,7709,7596,7488,7406,7329,7256,7186,7119,7053,6988,6925,6770,6716,6660,6604,6545,6486,6425,6362,6297,6230,6160,6089,6015,5938,5859,5807,5754,5699,5644,5587,5528,5469,5407,5345,5281,5215,5148,5080,5009,4938,4864,4789,4712,4633,4552,4470,4385,4317,4249,4179,4107,4035,3961,3886,3809,3731,3652,3572,3490,3407,3322,3236,3148,3060,2969,2877,2784,2689,2592,2494,2395,2293,2190,2086,1980,1872,1763,1652,1539,1424,1308,1190,1070,948,825,700,572,443,313,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -36,12 +37,17 @@ Uint32 czas=0;
 unsigned long licznik_impulsow=0;
 unsigned long wartosc_rejestru_licznika_starsza=0;
 unsigned long wartosc_rejestru_licznika_mlodsza=0;
+unsigned long wartosc_mlodszaTPS_A=0;
+unsigned long wartosc_mlodszaTPS_B=0;
+unsigned long wartosc_starszaTPS_A=0;
+unsigned long wartosc_starszaTPS_B=0;
 Uint32 zapis_wartosci_CpuTimer0=0;
 //double wcis=0;
 Uint32 delta=0;
 Uint32 predkosc_ob;
 Uint32 licznik_wtryskiwacza=0;
-
+Uint32 deltaTPS_A=0;
+Uint32 deltaTPS_B=0;
 double AFRustalony=15; //stan ustalony
 double AFR1cieply=13;
 double AFR2cieply=14;
@@ -92,6 +98,9 @@ void MAFsredni(void);
 void Vsredni(void);
 void dotrysk(void);
 void jalowe(void);
+void V_TPS_A(void);
+void V_TPS_B(void);
+
 
 long int MAF_sredni=0;// wartosc usredniona maf z 10 impulsów wa³u korbowego
 
@@ -548,7 +557,7 @@ void ustalony(void){ //obliczenie czasu wtrysku dla stanu ustalonego jazdy
 
 void obliczenie_dawki(double AFR){
 	double t_wtr=0, max_f_twtr=0;
-	t_wtr=(((((md[MAF_sredni]/AFR)*8.33333335)/((double)predkosc_ob)))/(0.0111833))+tz; //t_wtr=(((((m/AFR)*8.33333335)/n))/(0.0111833)); jest to czas wtrysku wyrazony w milisekundach
+	t_wtr=(((((md[MAF_sredni]/AFR)*8.33333335)/((double)predkosc_ob)))/(0.0111833))+tz+deltatdotr; //t_wtr=(((((m/AFR)*8.33333335)/n))/(0.0111833)); jest to czas wtrysku wyrazony w milisekundach
 	t_wtr=t_wtr*585.9374989; //konwersja z milisekund do jednostek zegara - jednostka zegara ustawiona na 1,70666667us bo 1/30MHz*1/5*2*preskaler, preskaler = 128
 	max_f_twtr=(17578125/predkosc_ob)-5;
 	if((((long)t_wtr)<((long)max_f_twtr))&&(((long)t_wtr)<=65000)){
@@ -708,27 +717,38 @@ void Vsredni(void){
 	//MAF_sredni=Napiecie_adcB0_MAF;
 }
 
-/*void dotrysk(void){
-if(Napiecie_adcB7_TPS_B>0) AFR8zimny=1;
-
+void dotrysk(void){
+if(deltaTPS_A>50||deltaTPS_B>50) deltatdotr=5;
 }
 
-void V_TPS(void){
-if((EvaRegs.T3PR==0)){ //licznik parzysty - podstawiamy starsz¹ wartosc rejestru
-				wartosc_starszaTPS=Napiecie_adcB5_TPS_A;
+void V_TPS_A(void){
+if((EvbRegs.T3PR==0)){ //licznik parzysty - podstawiamy starsz¹ wartosc rejestru
+				wartosc_starszaTPS_A=Napiecie_adcB5_TPS_A;
 		}
 
-if(EvaRegs.T3PR==700){ //licznik nieparzysty - podstawiamy m³odsz¹ wartosc rejestru
-				wartosc_mlodszaTPS=Napiecie_adcB5_TPS_A;
+if(EvbRegs.T3PR==700){ //licznik nieparzysty - podstawiamy m³odsz¹ wartosc rejestru
+				wartosc_mlodszaTPS_A=Napiecie_adcB5_TPS_A;
 		}
-if(wartosc_rejestru_licznika_starsza<wartosc_rejestru_licznika_mlodsza)	{
-		deltaTPS=(wartosc_rejestru_licznika_mlodsza-wartosc_rejestru_licznika_starsza);
-		deltaTPS=delta*40;
-		predkosc_ob=120000000/delta; //przerwanie Timer0 co 10 mikrosekund, st¹d delta*10 to ilosc mikrosekund
-		//predkosc_ob=(1.0)/predkosc_ob;
+if(wartosc_starszaTPS_A<wartosc_mlodszaTPS_A)	{
+		deltaTPS_A=(wartosc_mlodszaTPS_A-wartosc_starszaTPS_A);
+
 	}
 }
-*/
+
+void V_TPS_B(void){
+if((EvbRegs.T3PR==0)){ //licznik parzysty - podstawiamy starsz¹ wartosc rejestru
+				wartosc_starszaTPS_B=Napiecie_adcB7_TPS_B;
+		}
+
+if(EvbRegs.T3PR==700){ //licznik nieparzysty - podstawiamy m³odsz¹ wartosc rejestru
+				wartosc_mlodszaTPS_B=Napiecie_adcB7_TPS_B;
+		}
+if(wartosc_starszaTPS_B<wartosc_mlodszaTPS_B)	{
+		deltaTPS_B=(wartosc_mlodszaTPS_B-wartosc_starszaTPS_B);
+
+	}
+}
+
 void jalowe(void){
 	if(predkosc_ob<650){ //jesli predkosc obrotowa spadnie ponizej 700 wlacz przyspieszacz podscisnieniowy
 		GpioDataRegs.GPADAT.bit.GPIOA14=0;
