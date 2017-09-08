@@ -48,30 +48,30 @@ Uint32 predkosc_ob;
 Uint32 licznik_wtryskiwacza=0;
 Uint32 deltaTPS_A=0;
 Uint32 deltaTPS_B=0;
-double AFRustalony=15; //stan ustalony
+/*double AFRustalony=15; //stan ustalony
 double AFR1cieply=13;
 double AFR2cieply=14;
 double AFR3cieply=14.7;
 double AFR4cieply=15;
 double AFR5cieply=15.4;
-
-double AFR1zimny=3;
-double AFR2zimny=4;
-double AFR3zimny=4;
-double AFR4zimny=5;
-double AFR5zimny=5;
-double AFR6zimny=6;
-double AFR61zimny=6.2;
-double AFR7zimny=6.5;
-double AFR8zimny=6.5;
-double AFR9zimny=7.3;
+*/
+double AFR1zimny=2;
+double AFR2zimny=3;
+double AFR3zimny=3.5;
+double AFR4zimny=3.8;
+double AFR5zimny=4;
+double AFR6zimny=4.2;
+double AFR61zimny=4.4;
+double AFR7zimny=4.6;
+double AFR8zimny=4.8;
+/*double AFR9zimny=7.3;
 double AFR10zimny=7.6;
 double AFR11zimny=8.0;
 double AFR12zimny=8.2;
 double AFR13zimny=9.3;
 double AFR14zimny=9.9;
 double AFR15zimny=10.4;
-
+*/
 
 
 // Prototype statements for functions found within this file.
@@ -97,7 +97,7 @@ void wylacz_wtryskiwacz(void);
 void MAFsredni(void);
 void Vsredni(void);
 void dotrysk(void);
-void jalowe(void);
+//void jalowe(void);
 void V_TPS_A(void);
 void V_TPS_B(void);
 
@@ -403,7 +403,7 @@ interrupt void cpu_timer0_isr(void)
     	//serwo_algorytm(Napiecie_adcB3_tW, Napiecie_adcB5_TPS_A); //algorytm serwa wykorzystuje napiêcie z ADC - temperature cieczy chlodzacej oraz polozenie przepustnicy z kanalu A
     	serwo_ustaw(katA);
     	dotrysk();
-    	jalowe();
+    	//jalowe();
     	MAFsredni();
     	wylacz_wtryskiwacz();
     }
@@ -512,23 +512,40 @@ int serwo_ustaw(int kat){
 return 0;
 }
 
+//GpioDataRegs.GPADAT.bit.GPIOA10==0 - peda³ gazu wcisniety
+//GpioDataRegs.GPADAT.bit.GPIOA10==1 - peda³ gazu puszczony
+
 void proznia(void){
 	if((GpioDataRegs.GPADAT.bit.GPIOA10==0)&&((Uint32)predkosc_ob<1400)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
-		GpioDataRegs.GPADAT.bit.GPIOA14=1;
+		GpioDataRegs.GPADAT.bit.GPIOA14=1; //jesli nie jest wcisniety (0) i predkosc obrotowa mniejsza od 1400, wylacz podcisnienie
 	}
 
 
+	if((GpioDataRegs.GPADAT.bit.GPIOA10==1)&&(((Uint32)predkosc_ob<1400)&&((Uint32)predkosc_ob>700))){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
+		GpioDataRegs.GPADAT.bit.GPIOA14=1; //jesli pedal wcisniety (1) i predkosc obrotowa miêdzy 700 a 1400, wylacz podcisnienie
+	}
 
-	if((GpioDataRegs.GPADAT.bit.GPIOA10==1)&&((Uint32)predkosc_ob>=1450)||((Uint32)predkosc_ob<=650)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
-			GpioDataRegs.GPADAT.bit.GPIOA14=0;
-		}
+	if((GpioDataRegs.GPADAT.bit.GPIOA10==1)&&((Uint32)predkosc_ob<650)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
+		GpioDataRegs.GPADAT.bit.GPIOA14=0; //jesli pedal wcisniety i predkosc obrotowa ni¿sza ni¿ 650 wlacz podcisnienie
+	}
+
+	if((GpioDataRegs.GPADAT.bit.GPIOA10==0)&&((Uint32)predkosc_ob<650)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
+			GpioDataRegs.GPADAT.bit.GPIOA14=1; //jesli pedal niewcisniety i predkosc obrotowa wy¿sza ni¿ 1450 wylacz podcisnienie
+	}
+
+	if((GpioDataRegs.GPADAT.bit.GPIOA10==1)&&(((Uint32)predkosc_ob>=1450)||((Uint32)predkosc_ob<=650))){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
+			GpioDataRegs.GPADAT.bit.GPIOA14=0; //jesli pedal wcisniety i predkosc obrotowa wiêksza 1450 lub ni¿sza 650, wlacz podcisnienie
+	}
+	if((GpioDataRegs.GPADAT.bit.GPIOA10==1)&&((Uint32)predkosc_ob>1450)){ //bylo: if(((Uint32)predkosc_ob<1000)&&(GpioDataRegs.GPADAT.bit.GPIOA10==0))
+				GpioDataRegs.GPADAT.bit.GPIOA14=1; //jesli pedal wcisniety i predkosc obrotowa wy¿sza ni¿ 1450 wlacz podcisnienie
+	}
 
 }
 void pompa_paliwa(void){
 	if(GpioDataRegs.GPADAT.bit.GPIOA13==0){
-			GpioDataRegs.GPADAT.bit.GPIOA11=1;
+			GpioDataRegs.GPADAT.bit.GPIOA11=1; //jesli przycisk zwarty (0) w³¹cz pompê paliwa
 		}
-	if(GpioDataRegs.GPADAT.bit.GPIOA13==1) GpioDataRegs.GPADAT.bit.GPIOA11=0;
+	if(GpioDataRegs.GPADAT.bit.GPIOA13==1) GpioDataRegs.GPADAT.bit.GPIOA11=0; // jeli przycisk rozwarty (1) wy³¹cz pompê
 }
 
 
@@ -576,10 +593,10 @@ interrupt void licznik_isr(void){
 	PieCtrlRegs.PIEACK.all = PIEACK_GROUP3; //Acknowledge PIE Interrupt
 }
 
-void ustalony(void){ //obliczenie czasu wtrysku dla stanu ustalonego jazdy
+/*void ustalony(void){ //obliczenie czasu wtrysku dla stanu ustalonego jazdy
 	if((Uint32)predkosc_ob>5000) obliczenie_dawki(AFRustalony);
 }
-
+*/
 void obliczenie_dawki(double AFR){
 	double t_wtr=0, max_f_twtr=0;
 	t_wtr=(((((md[MAF_sredni]/AFR)*8.33333335)/((double)predkosc_ob)))/(0.0111833))+tz+deltatdotr; //t_wtr=(((((m/AFR)*8.33333335)/n))/(0.0111833)); jest to czas wtrysku wyrazony w milisekundach
@@ -596,7 +613,7 @@ void obliczenie_dawki(double AFR){
 	}
 }
 void rozruch(void){ //obliczenie czasu wtrysku dla rozruchu
-	int czy_byl_przedwtrysk=0;
+//	int czy_byl_przedwtrysk=0;
 if(1){//(Napiecie_adcB3_tW>0)&&((Uint32)predkosc_ob<=5000)){//jeœli temperatura wody <=17*C zimny rozruch
 	if(licznik_impulsow==1) czas=pierwszy_wtrysk[Napiecie_adcB3_tW];
 	if(licznik_impulsow>1&&licznik_impulsow<7) czas=(pierwszy_wtrysk[Napiecie_adcB3_tW]/2);
@@ -743,8 +760,13 @@ void Vsredni(void){
 }
 
 void dotrysk(void){
-if((deltaTPS_A>10)||(deltaTPS_B>10)) deltatdotr=10;
-else deltatdotr=0;
+	if((deltaTPS_A>14)||(deltaTPS_B>14)) deltatdotr=5.5;
+	if((deltaTPS_A==14)||(deltaTPS_B==14)) deltatdotr=5;
+	if((deltaTPS_A==13)||(deltaTPS_B==13)) deltatdotr=4.5;
+	if((deltaTPS_A==12)||(deltaTPS_B==12)) deltatdotr=4;
+	if((deltaTPS_A==11)||(deltaTPS_B==11)) deltatdotr=3.5;
+	if((deltaTPS_A==10)||(deltaTPS_B==10)) deltatdotr=3;
+	if((deltaTPS_A<10)||(deltaTPS_B<10)) deltatdotr=0;
 }
 
 
@@ -776,11 +798,11 @@ if((wartosc_starszaTPS_B<wartosc_mlodszaTPS_B)||(Napiecie_adcB7_TPS_B<5))	{
 	}
 }
 
-void jalowe(void){/*
+/*void jalowe(void){
 	if(predkosc_ob<650){ //jesli predkosc obrotowa spadnie ponizej 700 wlacz przyspieszacz podscisnieniowy
 		GpioDataRegs.GPADAT.bit.GPIOA14=0;
 	}
 	if(predkosc_ob>700){ //jesli wzrosnie wylacz, podsumowuj¹c poni¿ej 700 przyspieszacz wlaczony powy¿ej 700 do 1200 wylaczony powyzej 1250 wlaczony (histereza 50 obrotow)
 		GpioDataRegs.GPADAT.bit.GPIOA14=1;
-	}*/
-}
+	}
+}*/

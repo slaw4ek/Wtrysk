@@ -16,10 +16,10 @@ mapy.obj: ../DSP281x_Gpio.h
 mapy.obj: ../DSP281x_Ev.h
 mapy.obj: ../DSP281x_Adc.h
 mapy.obj: ../DSP281x_XIntrupt.h
-mapy.obj: C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/math.h
-mapy.obj: C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/linkage.h
-mapy.obj: C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/stdlib.h
-mapy.obj: C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/stdlibf.h
+mapy.obj: C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include/math.h
+mapy.obj: C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include/linkage.h
+mapy.obj: C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include/stdlib.h
+mapy.obj: C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include/stdlibf.h
 
 ../mapy.c: 
 ../DSP281x_Device.h: 
@@ -37,7 +37,7 @@ mapy.obj: C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/stdlibf.h
 ../DSP281x_Ev.h: 
 ../DSP281x_Adc.h: 
 ../DSP281x_XIntrupt.h: 
-C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/math.h: 
-C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/linkage.h: 
-C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/stdlib.h: 
-C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include/stdlibf.h: 
+C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include/math.h: 
+C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include/linkage.h: 
+C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include/stdlib.h: 
+C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include/stdlibf.h: 
