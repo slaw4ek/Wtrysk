@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0
+CG_TOOL_ROOT := C:/ti/ccsv5/tools/compiler/c2000_6.2.0
 
 ORDERED_OBJS += \
 $(GEN_CMDS__FLAG) \
@@ -125,7 +125,7 @@ all: Wtrysk.out
 Wtrysk.out: $(OBJS) $(CMD_SRCS) $(LIB_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: C2000 Linker'
-	"C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/bin/cl2000" -v28 -ml -mt -g --diag_warning=225 --display_error_number --diag_wrap=off -z -m"Wtrysk.map" --stack_size=0x400 --warn_sections -i"C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/lib" -i"C:/ti5.5/ccsv5/tools/compiler/c2000_6.2.0/include" --reread_libs --display_error_number --diag_wrap=off --xml_link_info="Wtrysk_linkInfo.xml" --rom_model -o "Wtrysk.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv5/tools/compiler/c2000_6.2.0/bin/cl2000" -v28 -ml -mt -g --diag_warning=225 --display_error_number --diag_wrap=off -z -m"Wtrysk.map" --stack_size=0x400 --warn_sections -i"C:/ti/ccsv5/tools/compiler/c2000_6.2.0/lib" -i"C:/ti/ccsv5/tools/compiler/c2000_6.2.0/include" --reread_libs --display_error_number --diag_wrap=off --xml_link_info="Wtrysk_linkInfo.xml" --rom_model -o "Wtrysk.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
